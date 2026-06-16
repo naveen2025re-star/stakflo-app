@@ -114,19 +114,7 @@ export default function PoliciesPage() {
     try {
       const fw = frameworks.find(f => f.id === aiDraftFramework);
       const result = await sendMessage(
-        `Draft a comprehensive compliance policy for the following:
-Topic: ${aiDraftTopic}
-Framework: ${fw?.name || 'General'}
-
-The policy should include:
-1. Purpose and scope
-2. Policy statement
-3. Roles and responsibilities
-4. Procedures and controls
-5. Compliance requirements
-6. Review and update schedule
-
-Make it audit-ready and suitable for a ${fw?.name || 'general compliance'} assessment. Write in a professional, formal tone.`
+        `Draft a comprehensive compliance policy for the following:\nTopic: ${aiDraftTopic}\nFramework: ${fw?.name || 'General'}\n\nThe policy should include:\n1. Purpose and scope\n2. Policy statement\n3. Roles and responsibilities\n4. Procedures and controls\n5. Compliance requirements\n6. Review and update schedule\n\nMake it audit-ready and suitable for a ${fw?.name || 'general compliance'} assessment. Write in a professional, formal tone.`
       );
       setAiDraft(result);
     } catch {
@@ -160,20 +148,7 @@ Make it audit-ready and suitable for a ${fw?.name || 'general compliance'} asses
     clearMessages();
     try {
       const result = await sendMessage(
-        `Analyze this compliance policy and identify gaps, improvements, and control mappings:
-
-Title: ${policy.title}
-Framework: ${(policy as any).frameworks?.name || 'General'}
-Version: ${policy.version}
-Status: ${policy.status}
-Content: ${(policy.content || '').slice(0, 2000)}
-
-Provide:
-1. Overall assessment
-2. Identified gaps or weaknesses
-3. Suggested improvements
-4. Control requirements this policy covers
-5. Cross-framework applicability (SOC 2, ISO 27001, HIPAA, GDPR)`
+        `Analyze this compliance policy and identify gaps, improvements, and control mappings:\n\nTitle: ${policy.title}\nFramework: ${(policy as any).frameworks?.name || 'General'}\nVersion: ${policy.version}\nStatus: ${policy.status}\nContent: ${(policy.content || '').slice(0, 2000)}\n\nProvide:\n1. Overall assessment\n2. Identified gaps or weaknesses\n3. Suggested improvements\n4. Control requirements this policy covers\n5. Cross-framework applicability (SOC 2, ISO 27001, HIPAA, GDPR)`
       );
       setAiAnalysis(result);
     } catch {
@@ -194,45 +169,7 @@ Provide:
     try {
       const fwList = frameworks.map(f => f.name).join(', ') || 'SOC 2, ISO 27001, HIPAA, GDPR';
       const result = await sendMessage(
-        `You are the Stakflo Policy Intelligence Engine. Parse the following policy document, extract its control intent, and automatically map requirements to compliance frameworks.
-
-Policy Title: ${legacyPolicyTitle || 'Unnamed policy'}
-Active Frameworks in this account: ${fwList}
-
----
-POLICY TEXT:
-${legacyPolicyText.slice(0, 4000)}
----
-
-Produce a **Policy Intelligence Report** with these sections:
-
-## Policy Summary
-In 2-3 sentences, describe what this policy governs and its scope.
-
-## Extracted Control Intent
-List 5-10 specific compliance controls implied or required by this policy. For each:
-- **Control**: Short title
-- **Requirement**: What the policy requires
-- **Type**: (technical / administrative / physical)
-
-## Cross-Framework Mapping
-Map each extracted control to relevant framework requirements:
-
-| Control | SOC 2 | ISO 27001 | HIPAA | GDPR |
-|---|---|---|---|---|
-
-(Use the control IDs/clauses. Mark N/A where not applicable.)
-
-## Coverage Gaps
-Identify compliance areas that are **missing** from this policy but required by the active frameworks. List the top 5 gaps.
-
-## Rewrite Recommendations
-What specific additions or changes would make this policy fully audit-ready across the mapped frameworks?
-
-## Suggested Policy Modernization Steps
-3-5 actionable steps to update this policy for current regulatory requirements.
-
-Be thorough and specific with framework references (e.g., CC6.1, A.9.2.1, 164.312(a)(2)(i), Art. 32).`
+        `You are the Stakflo Policy Intelligence Engine. Parse the following policy document, extract its control intent, and automatically map requirements to compliance frameworks.\n\nPolicy Title: ${legacyPolicyTitle || 'Unnamed policy'}\nActive Frameworks in this account: ${fwList}\n\n---\nPOLICY TEXT:\n${legacyPolicyText.slice(0, 4000)}\n---\n\nProduce a **Policy Intelligence Report** with these sections:\n\n## Policy Summary\nIn 2-3 sentences, describe what this policy governs and its scope.\n\n## Extracted Control Intent\nList 5-10 specific compliance controls implied or required by this policy. For each:\n- **Control**: Short title\n- **Requirement**: What the policy requires\n- **Type**: (technical / administrative / physical)\n\n## Cross-Framework Mapping\nMap each extracted control to relevant framework requirements:\n\n| Control | SOC 2 | ISO 27001 | HIPAA | GDPR |\n|---|---|---|---|---|\n\n(Use the control IDs/clauses. Mark N/A where not applicable.)\n\n## Coverage Gaps\nIdentify compliance areas that are **missing** from this policy but required by the active frameworks. List the top 5 gaps.\n\n## Rewrite Recommendations\nWhat specific additions or changes would make this policy fully audit-ready across the mapped frameworks?\n\n## Suggested Policy Modernization Steps\n3-5 actionable steps to update this policy for current regulatory requirements.\n\nBe thorough and specific with framework references (e.g., CC6.1, A.9.2.1, 164.312(a)(2)(i), Art. 32).`
       );
       setIntelligenceResult(result);
     } catch {

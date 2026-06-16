@@ -82,30 +82,7 @@ export default function RemediationPage() {
   const generatePlan = async (control: Control) => {
     setGenerating(control.id);
     try {
-      const prompt = `Generate a detailed remediation plan for the following failing compliance control:
-
-Control Reference: ${control.control_ref}
-Title: ${control.title}
-Description: ${control.description || 'No description provided'}
-Risk Level: ${control.risk_level}
-Framework: ${(control as any).frameworks?.name || 'Unknown'}
-Current Status: ${control.status}
-
-Provide a structured remediation plan with 3-5 specific, actionable steps. For each step, include:
-1. A clear title
-2. A detailed description of what needs to be done
-3. The type of evidence that would prove completion
-
-Format your response as JSON with this structure:
-{
-  "title": "Remediation plan title",
-  "priority": "high|medium|low",
-  "steps": [
-    {"step": 1, "title": "Step title", "description": "Step description", "completed": false}
-  ]
-}
-
-Return ONLY the JSON, no other text.`;
+      const prompt = `Generate a detailed remediation plan for the following failing compliance control:\n\nControl Reference: ${control.control_ref}\nTitle: ${control.title}\nDescription: ${control.description || 'No description provided'}\nRisk Level: ${control.risk_level}\nFramework: ${(control as any).frameworks?.name || 'Unknown'}\nCurrent Status: ${control.status}\n\nProvide a structured remediation plan with 3-5 specific, actionable steps. For each step, include:\n1. A clear title\n2. A detailed description of what needs to be done\n3. The type of evidence that would prove completion\n\nFormat your response as JSON with this structure:\n{\n  "title": "Remediation plan title",\n  "priority": "high|medium|low",\n  "steps": [\n    {"step": 1, "title": "Step title", "description": "Step description", "completed": false}\n  ]\n}\n\nReturn ONLY the JSON, no other text.`;
 
       const response = await sendMessage(prompt);
 
