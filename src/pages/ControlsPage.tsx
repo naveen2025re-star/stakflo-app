@@ -305,7 +305,7 @@ export default function ControlsPage() {
         columnDefinitions={[
           { id: 'ref', header: 'Ref', cell: item => <Box fontWeight="bold">{item.control_ref}</Box>, sortingField: 'control_ref', width: 120, isRowHeader: true },
           { id: 'title', header: 'Title', cell: item => item.title, sortingField: 'title' },
-          { id: 'framework', header: 'Framework', cell: item => (item as any).frameworks?.name || <Box color="text-body-secondary">—</Box>, width: 140 },
+          { id: 'framework', header: 'Framework', cell: item => (item as any).frameworks?.name || <Box color="text-body-secondary">\u2014</Box>, width: 140 },
           {
             id: 'status', header: 'Status', width: 150,
             cell: item => <StatusIndicator type={item.status === 'passing' ? 'success' : item.status === 'failing' ? 'error' : 'pending'}>{item.status === 'not_assessed' ? 'Not assessed' : item.status === 'passing' ? 'Passing' : 'Failing'}</StatusIndicator>,
@@ -352,7 +352,7 @@ export default function ControlsPage() {
                 </SpaceBetween>
               }
             >
-              {selectedControl.control_ref} — {selectedControl.title}
+              {selectedControl.control_ref} \u2014 {selectedControl.title}
             </Header>
           }
         >
@@ -360,7 +360,7 @@ export default function ControlsPage() {
             <KeyValuePairs
               columns={3}
               items={[
-                { label: 'Framework', value: (selectedControl as any).frameworks?.name || '—' },
+                { label: 'Framework', value: (selectedControl as any).frameworks?.name || '\u2014' },
                 { label: 'Status', value: <StatusIndicator type={selectedControl.status === 'passing' ? 'success' : selectedControl.status === 'failing' ? 'error' : 'pending'}>{selectedControl.status === 'not_assessed' ? 'Not assessed' : selectedControl.status}</StatusIndicator> },
                 { label: 'Risk Level', value: <Badge color={RISK_COLORS[selectedControl.risk_level]}>{selectedControl.risk_level}</Badge> },
                 { label: 'Owner', value: selectedControl.owner || 'Unassigned' },
