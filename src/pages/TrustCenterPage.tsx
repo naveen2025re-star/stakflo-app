@@ -125,24 +125,7 @@ export default function TrustCenterPage() {
     try {
       const fwSummary = frameworkDetails.map(fw => `${fw.name}: ${fw.pct}% coverage (${fw.passing}/${fw.total} controls)`).join('\n');
       const result = await sendMessage(
-        `Generate a professional executive summary for our Trust Center page that external stakeholders and prospective customers will see. Use the following real compliance data:
-
-Overall Compliance Score: ${overallScore}%
-Total Controls: ${totalControls} (${passingControls} passing)
-Published Policies: ${data.policies.length}
-Completed Audits: ${completedAudits.length}
-Approved Vendors: ${approvedVendors}/${data.vendors.length}
-
-Framework Coverage:
-${fwSummary}
-
-Write a 3-4 paragraph executive summary covering:
-1. Our commitment to security and compliance
-2. Current compliance posture with specific metrics
-3. Frameworks we support and their status
-4. Our continuous monitoring and improvement approach
-
-Keep it professional, confident, and data-driven. This will be shown to customers evaluating our security posture.`
+        `Generate a professional executive summary for our Trust Center page that external stakeholders and prospective customers will see. Use the following real compliance data:\n\nOverall Compliance Score: ${overallScore}%\nTotal Controls: ${totalControls} (${passingControls} passing)\nPublished Policies: ${data.policies.length}\nCompleted Audits: ${completedAudits.length}\nApproved Vendors: ${approvedVendors}/${data.vendors.length}\n\nFramework Coverage:\n${fwSummary}\n\nWrite a 3-4 paragraph executive summary covering:\n1. Our commitment to security and compliance\n2. Current compliance posture with specific metrics\n3. Frameworks we support and their status\n4. Our continuous monitoring and improvement approach\n\nKeep it professional, confident, and data-driven. This will be shown to customers evaluating our security posture.`
       );
       setExecutiveSummary(result);
     } catch {
@@ -181,43 +164,7 @@ Keep it professional, confident, and data-driven. This will be shown to customer
       const approvedVendorCount = data.vendors.filter(v => v.status === 'approved').length;
 
       const result = await sendMessage(
-        `Perform an automated Trust Center claim validation. Your job is to verify that the compliance claims we make publicly are backed by real evidence in our system.
-
-**Overall Compliance Score Claim: ${overallPct}%**
-Total Controls: ${totalControls} (${passingCount} marked passing)
-Approved Evidence Items: ${approvedEvidence.length}
-Pending Evidence Items: ${pendingEvidence.length}
-Published Policies: ${data.policies.length}
-Completed Audits: ${completedAuditCount}
-Approved Vendors: ${approvedVendorCount}/${data.vendors.length}
-
-Framework Claims:
-${fwDetails}
-
-Potentially Unverified Controls (passing but no approved evidence):
-${missingCoverage.slice(0, 15).map(c => `- ${c.control_ref}: ${c.title} [${c.risk_level}]`).join('\n') || '- None identified'}
-
-Produce a **Trust Center Claim Validation Report** with:
-
-## Validation Summary
-Overall confidence score (High/Medium/Low) and key finding.
-
-## Verified Claims
-List claims that are well-supported by the evidence on record.
-
-## Unverified or Weak Claims
-List claims that cannot be fully backed by current evidence. For each: the claim, why it's weak, and what evidence would verify it.
-
-## Evidence Gaps
-Identify controls claiming to pass that lack approved evidence (top 10 most critical).
-
-## Risk to Trust Center Credibility
-What is the reputational/legal risk if a customer or auditor challenges these claims?
-
-## Recommended Actions Before Publishing
-Numbered list of specific actions to strengthen claims before making the Trust Center public.
-
-Be direct and rigorous. This is an internal validation, not marketing copy.`
+        `Perform an automated Trust Center claim validation. Your job is to verify that the compliance claims we make publicly are backed by real evidence in our system.\n\n**Overall Compliance Score Claim: ${overallPct}%**\nTotal Controls: ${totalControls} (${passingCount} marked passing)\nApproved Evidence Items: ${approvedEvidence.length}\nPending Evidence Items: ${pendingEvidence.length}\nPublished Policies: ${data.policies.length}\nCompleted Audits: ${completedAuditCount}\nApproved Vendors: ${approvedVendorCount}/${data.vendors.length}\n\nFramework Claims:\n${fwDetails}\n\nPotentially Unverified Controls (passing but no approved evidence):\n${missingCoverage.slice(0, 15).map(c => `- ${c.control_ref}: ${c.title} [${c.risk_level}]`).join('\n') || '- None identified'}\n\nProduce a **Trust Center Claim Validation Report** with:\n\n## Validation Summary\nOverall confidence score (High/Medium/Low) and key finding.\n\n## Verified Claims\nList claims that are well-supported by the evidence on record.\n\n## Unverified or Weak Claims\nList claims that cannot be fully backed by current evidence. For each: the claim, why it's weak, and what evidence would verify it.\n\n## Evidence Gaps\nIdentify controls claiming to pass that lack approved evidence (top 10 most critical).\n\n## Risk to Trust Center Credibility\nWhat is the reputational/legal risk if a customer or auditor challenges these claims?\n\n## Recommended Actions Before Publishing\nNumbered list of specific actions to strengthen claims before making the Trust Center public.\n\nBe direct and rigorous. This is an internal validation, not marketing copy.`
       );
       setValidationReport(result);
     } catch {

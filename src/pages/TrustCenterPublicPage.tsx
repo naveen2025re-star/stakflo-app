@@ -263,13 +263,13 @@ export default function TrustCenterPublicPage() {
               <Table
                 columnDefinitions={[
                   { id: 'title', header: 'Audit', cell: item => item.title, isRowHeader: true },
-                  { id: 'framework', header: 'Framework', cell: item => (item as any).frameworks?.name || '—', width: 150 },
+                  { id: 'framework', header: 'Framework', cell: item => (item as any).frameworks?.name || '\u2014', width: 150 },
                   {
                     id: 'status', header: 'Status', width: 130,
                     cell: () => <StatusIndicator type="success">Completed</StatusIndicator>,
                   },
-                  { id: 'start', header: 'Start Date', cell: item => item.start_date || '—', width: 120 },
-                  { id: 'end', header: 'End Date', cell: item => item.end_date || '—', width: 120 },
+                  { id: 'start', header: 'Start Date', cell: item => item.start_date || '\u2014', width: 120 },
+                  { id: 'end', header: 'End Date', cell: item => item.end_date || '\u2014', width: 120 },
                 ]}
                 items={data.audits}
                 trackBy="id"
@@ -282,7 +282,7 @@ export default function TrustCenterPublicPage() {
         <div style={{ textAlign: 'center', padding: '24px 0', borderTop: `1px solid ${awsui.colorBorderDividerDefault}` }}>
           <SpaceBetween size="xs" alignItems="center" direction="vertical">
             <Box variant="small" color="text-body-secondary">
-              This trust center is powered by Stakflo — AI-native compliance automation
+              This trust center is powered by Stakflo \u2014 AI-native compliance automation
             </Box>
             <Button variant="link" iconName="external" href="https://stakflo.com" target="_blank">
               Learn about Stakflo
