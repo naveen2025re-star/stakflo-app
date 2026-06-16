@@ -43,15 +43,32 @@ export default function TeamPage() {
     if (!user) return;
     setLoading(true);
     try {
-      const { data: orgData } = await supabase.from('organizations').select('*').limit(1).single();
+      const { data: orgData } = await supabase
+        .from('organizations')
+        .select('*')
+        .limit(1)
+        .single();
+
       if (orgData) {
         setOrg(orgData);
-        const { data: memberData } = await supabase.from('org_members').select('*').eq('org_id', orgData.id);
+        const { data: memberData } = await supabase
+          .from('org_members')
+          .select('*')
+          .eq('org_id', orgData.id);
         setMembers(memberData || []);
-        const { data: inviteData } = await supabase.from('org_invitations').select('*').eq('org_id', orgData.id).is('accepted_at', null);
+
+        const { data: inviteData } = await supabase
+          .from('org_invitations')
+          .select('*')
+          .eq('org_id', orgData.id)
+          .is('accepted_at', null);
         setInvitations(inviteData || []);
       }
-    } catch { } finally { setLoading(false); }
+    } catch (err) {
+      // silently handle
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
@@ -60,13 +77,22 @@ export default function TeamPage() {
     if (!org || !user || !inviteEmail.trim()) return;
     setSubmitting(true);
     try {
-      const { error } = await supabase.from('org_invitations').insert({ org_id: org.id, email: inviteEmail.trim(), role: inviteRole?.value || 'viewer', invited_by: user.id });
+      const { error } = await supabase.from('org_invitations').insert({
+        org_id: org.id,
+        email: inviteEmail.trim(),
+        role: inviteRole?.value || 'viewer',
+        invited_by: user.id,
+      });
       if (error) throw error;
       addNotification('success', `Invitation sent to ${inviteEmail}`);
-      setShowInviteModal(false); setInviteEmail(''); fetchData();
+      setShowInviteModal(false);
+      setInviteEmail('');
+      fetchData();
     } catch (err) {
       addNotification('error', err instanceof Error ? err.message : 'Failed to send invite');
-    } finally { setSubmitting(false); }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const roleBadge = (role: string) => {
@@ -81,40 +107,209 @@ export default function TeamPage() {
 
   return (
     <SpaceBetween size="l">
-      <Header variant="h1" description="Manage your team members and their access levels." actions={<Button variant="primary" iconName="add-plus" onClick={() => setShowInviteModal(true)}>Invite Member</Button>}>Team Management</Header>
+      <Header
+        variant="h1"
+        description="Manage your team members and their access levels."
+        actions={
+          <Button variant="primary" iconName="add-plus" onClick={() => setShowInviteModal(true)}>
+            Invite Member
+          </Button>
+        }
+      >
+        Team Management
+      </Header>
+
       <Container>
         <ColumnLayout columns={4} variant="text-grid">
-          <div><Box variant="awsui-key-label">Organization</Box><Box variant="p">{org?.name || 'Not set up'}</Box></div>
-          <div><Box variant="awsui-key-label">Plan</Box><Box variant="p">{(org?.plan_tier || 'Trial').charAt(0).toUpperCase() + (org?.plan_tier || 'trial').slice(1)}</Box></div>
-          <div><Box variant="awsui-key-label">Members</Box><Box variant="p">{members.length}</Box></div>
-          <div><Box variant="awsui-key-label">Pending Invites</Box><Box variant="p">{invitations.length}</Box></div>
+          <div>
+            <Box variant="awsui-key-label">Organization</Box>
+            <Box variant="p">{org?.name || 'Not set up'}</Box>
+          </div>
+          <div>
+            <Box variant="awsui-key-label">Plan</Box>
+            <Box variant="p">{(org?.plan_tier || 'Trial').charAt(0).toUpperCase() + (org?.plan_tier || 'trial').slice(1)}</Box>
+          </div>
+          <div>
+            <Box variant="awsui-key-label">Members</Box>
+            <Box variant="p">{members.length}</Box>
+          </div>
+          <div>
+            <Box variant="awsui-key-label">Pending Invites</Box>
+            <Box variant="p">{invitations.length}</Box>
+          </div>
         </ColumnLayout>
       </Container>
-      <Tabs tabs={[
-        { id: 'members', label: `Members (${members.length})`, content: (
-          <Table items={members} loading={loading} columnDefinitions={[
-            { id: 'user', header: 'User', cell: (item) => (<SpaceBetween direction="horizontal" size="xs" alignItems="center"><Icon name="user-profile" /><Box variant="p">{item.user_id === user?.id ? 'You' : item.user_id.slice(0, 8) + '...'}</Box></SpaceBetween>), width: 250 },
-            { id: 'role', header: 'Role', cell: (item) => roleBadge(item.role), width: 180 },
-            { id: 'joined', header: 'Joined', cell: (item) => new Date(item.joined_at).toLocaleDateString(), width: 150 },
-            { id: 'actions', header: 'Actions', cell: (item) => item.user_id === user?.id ? <Box variant="small" color="text-body-secondary">-</Box> : <Button variant="inline-link" iconName="edit">Change role</Button>, width: 150 },
-          ]} empty={<Box textAlign="center" padding="l"><SpaceBetween size="m"><Box variant="h3">No team members yet</Box><Button onClick={() => setShowInviteModal(true)}>Invite Member</Button></SpaceBetween></Box>} />
-        )},
-        { id: 'invitations', label: `Pending Invites (${invitations.length})`, content: (
-          <Table items={invitations} loading={loading} columnDefinitions={[
-            { id: 'email', header: 'Email', cell: (item) => item.email, width: 300 },
-            { id: 'role', header: 'Role', cell: (item) => roleBadge(item.role), width: 180 },
-            { id: 'sent', header: 'Sent', cell: (item) => new Date(item.created_at).toLocaleDateString(), width: 150 },
-            { id: 'expires', header: 'Expires', cell: (item) => (<StatusIndicator type={new Date(item.expires_at) > new Date() ? 'success' : 'error'}>{new Date(item.expires_at).toLocaleDateString()}</StatusIndicator>), width: 150 },
-            { id: 'actions', header: 'Actions', cell: () => <Button variant="inline-link" iconName="remove">Revoke</Button>, width: 120 },
-          ]} empty={<Box textAlign="center" padding="l"><Box variant="p" color="text-body-secondary">No pending invitations.</Box></Box>} />
-        )},
-      ]} />
+
+      <Tabs
+        tabs={[
+          {
+            id: 'members',
+            label: `Members (${members.length})`,
+            content: (
+              <Table
+                items={members}
+                loading={loading}
+                columnDefinitions={[
+                  {
+                    id: 'user',
+                    header: 'User',
+                    cell: (item) => (
+                      <SpaceBetween direction="horizontal" size="xs" alignItems="center">
+                        <Icon name="user-profile" />
+                        <Box variant="p">{item.user_id === user?.id ? 'You' : item.user_id.slice(0, 8) + '...'}</Box>
+                      </SpaceBetween>
+                    ),
+                    width: 250,
+                  },
+                  {
+                    id: 'role',
+                    header: 'Role',
+                    cell: (item) => roleBadge(item.role),
+                    width: 180,
+                  },
+                  {
+                    id: 'joined',
+                    header: 'Joined',
+                    cell: (item) => new Date(item.joined_at).toLocaleDateString(),
+                    width: 150,
+                  },
+                  {
+                    id: 'actions',
+                    header: 'Actions',
+                    cell: (item) => item.user_id === user?.id
+                      ? <Box variant="small" color="text-body-secondary">-</Box>
+                      : <Button variant="inline-link" iconName="edit">Change role</Button>,
+                    width: 150,
+                  },
+                ]}
+                empty={
+                  <Box textAlign="center" padding="l">
+                    <SpaceBetween size="m">
+                      <Box variant="h3">No team members yet</Box>
+                      <Box variant="p" color="text-body-secondary">
+                        Invite team members to collaborate on compliance.
+                      </Box>
+                      <Button onClick={() => setShowInviteModal(true)}>Invite Member</Button>
+                    </SpaceBetween>
+                  </Box>
+                }
+              />
+            ),
+          },
+          {
+            id: 'invitations',
+            label: `Pending Invites (${invitations.length})`,
+            content: (
+              <Table
+                items={invitations}
+                loading={loading}
+                columnDefinitions={[
+                  {
+                    id: 'email',
+                    header: 'Email',
+                    cell: (item) => item.email,
+                    width: 300,
+                  },
+                  {
+                    id: 'role',
+                    header: 'Role',
+                    cell: (item) => roleBadge(item.role),
+                    width: 180,
+                  },
+                  {
+                    id: 'sent',
+                    header: 'Sent',
+                    cell: (item) => new Date(item.created_at).toLocaleDateString(),
+                    width: 150,
+                  },
+                  {
+                    id: 'expires',
+                    header: 'Expires',
+                    cell: (item) => (
+                      <StatusIndicator type={new Date(item.expires_at) > new Date() ? 'success' : 'error'}>
+                        {new Date(item.expires_at).toLocaleDateString()}
+                      </StatusIndicator>
+                    ),
+                    width: 150,
+                  },
+                  {
+                    id: 'actions',
+                    header: 'Actions',
+                    cell: () => <Button variant="inline-link" iconName="remove">Revoke</Button>,
+                    width: 120,
+                  },
+                ]}
+                empty={
+                  <Box textAlign="center" padding="l">
+                    <Box variant="p" color="text-body-secondary">No pending invitations.</Box>
+                  </Box>
+                }
+              />
+            ),
+          },
+        ]}
+      />
+
+      <Container header={<Header variant="h3">Role Permissions</Header>}>
+        <Table
+          items={[
+            { capability: 'View dashboard & reports', viewer: true, auditor: true, lead: true, admin: true },
+            { capability: 'View controls & evidence', viewer: true, auditor: true, lead: true, admin: true },
+            { capability: 'Comment on evidence', viewer: false, auditor: true, lead: true, admin: true },
+            { capability: 'Approve/reject evidence', viewer: false, auditor: true, lead: true, admin: true },
+            { capability: 'Create/edit controls', viewer: false, auditor: false, lead: true, admin: true },
+            { capability: 'Manage policies', viewer: false, auditor: false, lead: true, admin: true },
+            { capability: 'Use AI copilot', viewer: false, auditor: false, lead: true, admin: true },
+            { capability: 'Manage integrations', viewer: false, auditor: false, lead: false, admin: true },
+            { capability: 'Invite/remove members', viewer: false, auditor: false, lead: false, admin: true },
+            { capability: 'Billing & settings', viewer: false, auditor: false, lead: false, admin: true },
+          ]}
+          columnDefinitions={[
+            { id: 'capability', header: 'Capability', cell: (item) => item.capability, width: 250 },
+            { id: 'viewer', header: 'Viewer', cell: (item) => item.viewer ? <Icon name="status-positive" variant="success" /> : <Icon name="close" variant="subtle" />, width: 100 },
+            { id: 'auditor', header: 'Auditor', cell: (item) => item.auditor ? <Icon name="status-positive" variant="success" /> : <Icon name="close" variant="subtle" />, width: 100 },
+            { id: 'lead', header: 'Lead', cell: (item) => item.lead ? <Icon name="status-positive" variant="success" /> : <Icon name="close" variant="subtle" />, width: 100 },
+            { id: 'admin', header: 'Admin', cell: (item) => item.admin ? <Icon name="status-positive" variant="success" /> : <Icon name="close" variant="subtle" />, width: 100 },
+          ]}
+          variant="embedded"
+        />
+      </Container>
+
       {showInviteModal && (
-        <Modal visible onDismiss={() => setShowInviteModal(false)} header="Invite Team Member" footer={<Box float="right"><SpaceBetween direction="horizontal" size="xs"><Button variant="link" onClick={() => setShowInviteModal(false)}>Cancel</Button><Button variant="primary" loading={submitting} onClick={handleInvite}>Send Invitation</Button></SpaceBetween></Box>}>
+        <Modal
+          visible
+          onDismiss={() => setShowInviteModal(false)}
+          header="Invite Team Member"
+          footer={
+            <Box float="right">
+              <SpaceBetween direction="horizontal" size="xs">
+                <Button variant="link" onClick={() => setShowInviteModal(false)}>Cancel</Button>
+                <Button variant="primary" loading={submitting} onClick={handleInvite}>
+                  Send Invitation
+                </Button>
+              </SpaceBetween>
+            </Box>
+          }
+        >
           <SpaceBetween size="l">
-            <FormField label="Email address"><Input type="email" value={inviteEmail} onChange={({ detail }) => setInviteEmail(detail.value)} placeholder="colleague@company.com" /></FormField>
-            <FormField label="Role" description="Determines what the member can access."><Select selectedOption={inviteRole} onChange={({ detail }) => setInviteRole(detail.selectedOption as any)} options={ROLE_OPTIONS} /></FormField>
-            <Alert type="info">The invitee will receive an email with a link to join your organization.</Alert>
+            <FormField label="Email address">
+              <Input
+                type="email"
+                value={inviteEmail}
+                onChange={({ detail }) => setInviteEmail(detail.value)}
+                placeholder="colleague@company.com"
+              />
+            </FormField>
+            <FormField label="Role" description="Determines what the member can access.">
+              <Select
+                selectedOption={inviteRole}
+                onChange={({ detail }) => setInviteRole(detail.selectedOption as any)}
+                options={ROLE_OPTIONS}
+              />
+            </FormField>
+            <Alert type="info">
+              The invitee will receive an email with a link to join your organization.
+            </Alert>
           </SpaceBetween>
         </Modal>
       )}
