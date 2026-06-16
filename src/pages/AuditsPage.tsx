@@ -140,7 +140,32 @@ export default function AuditsPage() {
 
     try {
       const result = await sendMessage(
-        `Generate an audit readiness assessment for the following audit:\n\nAudit: ${audit.title}\nFramework: ${auditFramework?.name || 'Unknown'}\nStatus: ${audit.status.replace('_', ' ')}\nStart Date: ${audit.start_date || 'Not set'}\nEnd Date: ${audit.end_date || 'Not set'}\n\nFramework Controls Overview:\n- Total controls: ${frameworkControls.length}\n- Passing: ${passingControls.length} (${frameworkControls.length > 0 ? Math.round((passingControls.length / frameworkControls.length) * 100) : 0}%)\n- Failing: ${failingControls.length}\n- Evidence coverage: ${coveragePct}% of controls have approved evidence\n\nFailing Controls (top 5):\n${failingControls.slice(0, 5).map(c => `- ${c.control_ref}: ${c.title} [${c.risk_level} risk]`).join('\n') || '- None'}\n\nProvide:\n1. Readiness Score (0-100) with rationale\n2. Critical gaps that must be fixed before the audit\n3. Evidence gaps (controls missing approved evidence)\n4. Risk areas the auditor will focus on\n5. 2-week action plan to achieve audit readiness\n6. Estimated likelihood of passing based on current state\n\nBe specific and actionable. Format clearly for compliance team review.`
+        `Generate an audit readiness assessment for the following audit:
+
+Audit: ${audit.title}
+Framework: ${auditFramework?.name || 'Unknown'}
+Status: ${audit.status.replace('_', ' ')}
+Start Date: ${audit.start_date || 'Not set'}
+End Date: ${audit.end_date || 'Not set'}
+
+Framework Controls Overview:
+- Total controls: ${frameworkControls.length}
+- Passing: ${passingControls.length} (${frameworkControls.length > 0 ? Math.round((passingControls.length / frameworkControls.length) * 100) : 0}%)
+- Failing: ${failingControls.length}
+- Evidence coverage: ${coveragePct}% of controls have approved evidence
+
+Failing Controls (top 5):
+${failingControls.slice(0, 5).map(c => `- ${c.control_ref}: ${c.title} [${c.risk_level} risk]`).join('\n') || '- None'}
+
+Provide:
+1. Readiness Score (0-100) with rationale
+2. Critical gaps that must be fixed before the audit
+3. Evidence gaps (controls missing approved evidence)
+4. Risk areas the auditor will focus on
+5. 2-week action plan to achieve audit readiness
+6. Estimated likelihood of passing based on current state
+
+Be specific and actionable. Format clearly for compliance team review.`
       );
       setReadinessReport(result);
     } catch {
@@ -194,7 +219,7 @@ export default function AuditsPage() {
             <SpaceBetween size="xxs">
               <Box variant="awsui-key-label">Days Remaining</Box>
               <Box variant="h2" color={daysUntilEnd !== null && daysUntilEnd < 14 ? 'text-status-error' : 'inherit'}>
-                {daysUntilEnd !== null ? daysUntilEnd : '\u2014'}
+                {daysUntilEnd !== null ? daysUntilEnd : '—'}
               </Box>
               {audit.end_date && <Box variant="small" color="text-body-secondary">{new Date(audit.end_date).toLocaleDateString()}</Box>}
             </SpaceBetween>
@@ -254,7 +279,7 @@ export default function AuditsPage() {
                   variant="embedded"
                   columnDefinitions={[
                     { id: 'title', header: 'Evidence', cell: item => item.title, isRowHeader: true },
-                    { id: 'control', header: 'Control', width: 160, cell: item => (item as any).controls?.control_ref || '\u2014' },
+                    { id: 'control', header: 'Control', width: 160, cell: item => (item as any).controls?.control_ref || '—' },
                     {
                       id: 'status', header: 'Status', width: 140,
                       cell: item => <StatusIndicator type={item.status === 'approved' ? 'success' : item.status === 'rejected' ? 'error' : 'pending'}>{item.status}</StatusIndicator>,
@@ -363,7 +388,7 @@ export default function AuditsPage() {
           },
           {
             id: 'framework', header: 'Framework', width: 160,
-            cell: item => (item as any).frameworks?.name || '\u2014',
+            cell: item => (item as any).frameworks?.name || '—',
           },
           {
             id: 'status', header: 'Status', width: 150,
@@ -372,11 +397,11 @@ export default function AuditsPage() {
               return s ? <StatusIndicator type={s.type}>{s.label}</StatusIndicator> : item.status;
             },
           },
-          { id: 'start', header: 'Start Date', width: 130, cell: item => item.start_date ? new Date(item.start_date + 'T00:00:00').toLocaleDateString() : '\u2014' },
+          { id: 'start', header: 'Start Date', width: 130, cell: item => item.start_date ? new Date(item.start_date + 'T00:00:00').toLocaleDateString() : '—' },
           {
             id: 'end', header: 'End Date', width: 130,
             cell: item => {
-              if (!item.end_date) return '\u2014';
+              if (!item.end_date) return '—';
               const d = new Date(item.end_date + 'T00:00:00');
               const days = Math.ceil((d.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
               return (
