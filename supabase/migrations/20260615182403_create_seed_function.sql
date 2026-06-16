@@ -1,18 +1,3 @@
-/*
-# Seed Data Function
-
-Creates a database function `seed_user_data(uid)` that populates a new user's account
-with sample compliance data (frameworks, controls, evidence, audits, vendors, policies).
-This is called from the frontend after a user's first sign-up to give them a populated dashboard.
-
-## Functions
-- `seed_user_data(uid uuid)` - Inserts sample data for the given user across all tables.
-
-## Notes
-- Idempotent: checks if frameworks already exist for the user before inserting.
-- Creates 4 frameworks, ~24 controls, evidence items, audits, vendors, and policies.
-*/
-
 CREATE OR REPLACE FUNCTION seed_user_data(uid uuid) RETURNS void AS $$
 DECLARE
   fw_soc2 uuid;
@@ -22,33 +7,26 @@ DECLARE
   ctrl_ids uuid[];
   c_id uuid;
 BEGIN
-  -- Only seed if user has no frameworks yet
   IF EXISTS (SELECT 1 FROM frameworks WHERE user_id = uid) THEN
     RETURN;
   END IF;
 
-  -- Frameworks
   INSERT INTO frameworks (id, user_id, name, description, icon)
-  VALUES
-    (gen_random_uuid(), uid, 'SOC 2', 'Service Organization Control 2 - Trust Services Criteria', 'security')
+  VALUES (gen_random_uuid(), uid, 'SOC 2', 'Service Organization Control 2 - Trust Services Criteria', 'security')
   RETURNING id INTO fw_soc2;
 
   INSERT INTO frameworks (id, user_id, name, description, icon)
-  VALUES
-    (gen_random_uuid(), uid, 'ISO 27001', 'Information Security Management System standard', 'lock-private')
+  VALUES (gen_random_uuid(), uid, 'ISO 27001', 'Information Security Management System standard', 'lock-private')
   RETURNING id INTO fw_iso;
 
   INSERT INTO frameworks (id, user_id, name, description, icon)
-  VALUES
-    (gen_random_uuid(), uid, 'HIPAA', 'Health Insurance Portability and Accountability Act', 'heart')
+  VALUES (gen_random_uuid(), uid, 'HIPAA', 'Health Insurance Portability and Accountability Act', 'heart')
   RETURNING id INTO fw_hipaa;
 
   INSERT INTO frameworks (id, user_id, name, description, icon)
-  VALUES
-    (gen_random_uuid(), uid, 'GDPR', 'General Data Protection Regulation', 'globe')
+  VALUES (gen_random_uuid(), uid, 'GDPR', 'General Data Protection Regulation', 'globe')
   RETURNING id INTO fw_gdpr;
 
-  -- SOC 2 Controls
   INSERT INTO controls (user_id, framework_id, control_ref, title, description, status, risk_level, owner, last_assessed_at) VALUES
     (uid, fw_soc2, 'CC1.1', 'Control Environment', 'The entity demonstrates a commitment to integrity and ethical values', 'passing', 'low', 'Sarah Chen', now() - interval '5 days'),
     (uid, fw_soc2, 'CC1.2', 'Board Oversight', 'The board of directors demonstrates independence from management', 'passing', 'medium', 'Sarah Chen', now() - interval '10 days'),
@@ -59,7 +37,6 @@ BEGIN
     (uid, fw_soc2, 'CC6.1', 'Logical Access', 'Entity implements logical access security measures', 'failing', 'critical', 'Mike Torres', now() - interval '1 day'),
     (uid, fw_soc2, 'CC7.1', 'System Operations', 'Entity detects and monitors system changes', 'passing', 'medium', 'James Wilson', now() - interval '15 days');
 
-  -- ISO 27001 Controls
   INSERT INTO controls (user_id, framework_id, control_ref, title, description, status, risk_level, owner, last_assessed_at) VALUES
     (uid, fw_iso, 'A.5.1', 'Information Security Policy', 'Management direction for information security', 'passing', 'low', 'Sarah Chen', now() - interval '4 days'),
     (uid, fw_iso, 'A.6.1', 'Internal Organization', 'Framework to manage information security', 'passing', 'medium', 'Mike Torres', now() - interval '12 days'),
@@ -68,7 +45,6 @@ BEGIN
     (uid, fw_iso, 'A.9.1', 'Access Control', 'Limit access to information and processing facilities', 'failing', 'critical', 'Mike Torres', now() - interval '1 day'),
     (uid, fw_iso, 'A.10.1', 'Cryptography', 'Ensure proper use of cryptographic controls', 'passing', 'low', 'Sarah Chen', now() - interval '20 days');
 
-  -- HIPAA Controls
   INSERT INTO controls (user_id, framework_id, control_ref, title, description, status, risk_level, owner, last_assessed_at) VALUES
     (uid, fw_hipaa, '164.308(a)(1)', 'Security Management', 'Implement policies to prevent security violations', 'passing', 'high', 'Lisa Park', now() - interval '6 days'),
     (uid, fw_hipaa, '164.308(a)(3)', 'Workforce Security', 'Ensure workforce members have appropriate access', 'failing', 'critical', 'Mike Torres', now() - interval '3 days'),
@@ -76,7 +52,6 @@ BEGIN
     (uid, fw_hipaa, '164.312(a)(1)', 'Access Control', 'Technical policies for electronic information systems', 'passing', 'high', 'James Wilson', now() - interval '9 days'),
     (uid, fw_hipaa, '164.312(e)(1)', 'Transmission Security', 'Technical measures to guard against unauthorized access', 'passing', 'medium', 'Mike Torres', now() - interval '14 days');
 
-  -- GDPR Controls
   INSERT INTO controls (user_id, framework_id, control_ref, title, description, status, risk_level, owner, last_assessed_at) VALUES
     (uid, fw_gdpr, 'Art.5', 'Data Processing Principles', 'Lawfulness, fairness, transparency of processing', 'passing', 'high', 'Sarah Chen', now() - interval '5 days'),
     (uid, fw_gdpr, 'Art.6', 'Lawful Basis', 'At least one lawful basis for processing', 'passing', 'medium', 'Lisa Park', now() - interval '11 days'),
@@ -84,12 +59,10 @@ BEGIN
     (uid, fw_gdpr, 'Art.32', 'Security of Processing', 'Implement appropriate technical measures', 'not_assessed', 'critical', 'James Wilson', null),
     (uid, fw_gdpr, 'Art.33', 'Breach Notification', 'Notify supervisory authority within 72 hours', 'passing', 'medium', 'Sarah Chen', now() - interval '18 days');
 
-  -- Get some control IDs for evidence
   SELECT array_agg(id) INTO ctrl_ids FROM (
     SELECT id FROM controls WHERE user_id = uid ORDER BY created_at LIMIT 8
   ) sub;
 
-  -- Evidence
   INSERT INTO evidence (user_id, control_id, title, description, status, uploaded_at) VALUES
     (uid, ctrl_ids[1], 'Code of Conduct Policy', 'Annual employee code of conduct acknowledgment', 'approved', now() - interval '3 days'),
     (uid, ctrl_ids[1], 'Ethics Training Records', 'Q1 2025 ethics training completion report', 'approved', now() - interval '10 days'),
@@ -101,14 +74,12 @@ BEGIN
     (uid, ctrl_ids[7], 'Access Control Matrix', 'Role-based access control documentation', 'approved', now() - interval '5 days'),
     (uid, ctrl_ids[8], 'System Architecture Diagram', 'Current system architecture and data flow', 'pending', now() - interval '6 days');
 
-  -- Audits
   INSERT INTO audits (user_id, framework_id, title, status, start_date, end_date, notes) VALUES
     (uid, fw_soc2, 'SOC 2 Type II Annual Audit 2025', 'in_progress', '2025-01-15', '2025-06-30', 'Annual SOC 2 Type II audit with Deloitte'),
     (uid, fw_iso, 'ISO 27001 Surveillance Audit', 'not_started', '2025-07-01', '2025-08-15', 'Annual surveillance audit for ISO certification'),
     (uid, fw_hipaa, 'HIPAA Compliance Assessment Q2', 'completed', '2025-03-01', '2025-04-30', 'Quarterly HIPAA compliance assessment completed'),
     (uid, fw_gdpr, 'GDPR Annual Review 2025', 'in_progress', '2025-02-01', '2025-05-31', 'Annual review of GDPR compliance measures');
 
-  -- Vendors
   INSERT INTO vendors (user_id, name, risk_score, status, last_reviewed_at, notes) VALUES
     (uid, 'AWS', 25, 'approved', now() - interval '30 days', 'SOC 2 Type II and ISO 27001 certified'),
     (uid, 'Datadog', 30, 'approved', now() - interval '45 days', 'Monitoring provider, SOC 2 compliant'),
@@ -118,7 +89,6 @@ BEGIN
     (uid, 'CloudSync Pro', 58, 'under_review', now() - interval '15 days', 'New vendor, security review in progress'),
     (uid, 'DocuSign', 22, 'approved', now() - interval '35 days', 'FedRAMP authorized, SOC 1/2 compliant');
 
-  -- Policies
   INSERT INTO policies (user_id, framework_id, title, version, status, content, last_reviewed_at) VALUES
     (uid, fw_soc2, 'Information Security Policy', '3.2', 'published', 'This policy establishes the framework for managing information security across the organization...', now() - interval '20 days'),
     (uid, fw_soc2, 'Acceptable Use Policy', '2.1', 'published', 'This policy defines acceptable use of company technology resources and systems...', now() - interval '30 days'),
