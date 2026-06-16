@@ -1,15 +1,17 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import Drawer from '@cloudscape-design/components/drawer';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Box from '@cloudscape-design/components/box';
+import Button from '@cloudscape-design/components/button';
+import ButtonGroup from '@cloudscape-design/components/button-group';
+import Container from '@cloudscape-design/components/container';
 import Header from '@cloudscape-design/components/header';
 import SpaceBetween from '@cloudscape-design/components/space-between';
-import Box from '@cloudscape-design/components/box';
-import ButtonGroup from '@cloudscape-design/components/button-group';
-import LiveRegion from '@cloudscape-design/components/live-region';
-import Button from '@cloudscape-design/components/button';
-import PromptInput from '@cloudscape-design/components/prompt-input';
+import Badge from '@cloudscape-design/components/badge';
 import Select from '@cloudscape-design/components/select';
 import Tabs from '@cloudscape-design/components/tabs';
-import Badge from '@cloudscape-design/components/badge';
+import Drawer from '@cloudscape-design/components/drawer';
+import PromptInput from '@cloudscape-design/components/prompt-input';
+import LiveRegion from '@cloudscape-design/components/live-region';
 import Avatar from '@cloudscape-design/chat-components/avatar';
 import ChatBubble from '@cloudscape-design/chat-components/chat-bubble';
 import SupportPromptGroup from '@cloudscape-design/chat-components/support-prompt-group';
@@ -17,6 +19,7 @@ import { useAI, buildComplianceSystemPrompt } from '../lib/useAI';
 import { supabase } from '../lib/supabase';
 import MarkdownContent from './MarkdownContent';
 import type { Control, Framework, AIConversation } from '../lib/types';
+import { useRef } from 'react';
 
 const AI_MODELS = [
   { label: 'GLM-4 (Fast)', value: 'zhipuai/glm-4-5' },
